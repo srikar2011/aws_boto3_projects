@@ -1,76 +1,91 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>AWS DevOps Dashboard</title>
+    <title>AWS Dashboard</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 
-<body class="bg-dark text-light">
+<body>
 
-<div class="container mt-4">
-    <h2 class="text-center">🚀 AWS DevOps Dashboard</h2>
+<div class="d-flex">
 
-    <form method="POST">
-        <input class="form-control mb-3" name="region" value="us-east-1">
+    <!-- Sidebar -->
+    <div class="sidebar p-3">
+        <h4>⚙ AWS Panel</h4>
+        <button class="btn btn-dark w-100 mb-2" onclick="loadEC2()">EC2</button>
+        <button class="btn btn-dark w-100 mb-2" onclick="loadIAM()">IAM</button>
+    </div>
 
-        <div class="d-flex flex-wrap gap-2">
-            <button formaction="/ec2" class="btn btn-primary">EC2</button>
-            <button formaction="/s3" class="btn btn-success">S3 List</button>
-            <button formaction="/create-bucket" class="btn btn-warning">Create Bucket</button>
-            <button formaction="/iam" class="btn btn-info">IAM Users</button>
-            <button formaction="/pricing" class="btn btn-danger">Pricing</button>
-        </div>
-    </form>
+    <!-- Main -->
+    <div class="content p-4 w-100">
+        <h3>Dashboard</h3>
 
-    <hr>
+        <input id="region" class="form-control mb-3" value="us-east-1">
 
-    <!-- EC2 -->
-    {% if ec2 %}
-    <h4>EC2 Instances</h4>
-    <table class="table table-dark table-striped">
-        <tr><th>ID</th><th>State</th><th>Type</th></tr>
-        {% for i in ec2 %}
-        <tr>
-            <td>{{ i.id }}</td>
-            <td>{{ i.state }}</td>
-            <td>{{ i.type }}</td>
-        </tr>
-        {% endfor %}
-    </table>
-    {% endif %}
+        <div id="output"></div>
 
-    <!-- S3 -->
-    {% if buckets %}
-    <h4>S3 Buckets</h4>
-    <ul>
-        {% for b in buckets %}
-        <li>{{ b }}</li>
-        {% endfor %}
-    </ul>
-    {% endif %}
-
-    <!-- IAM -->
-    {% if users %}
-    <h4>IAM Users</h4>
-    <ul>
-        {% for u in users %}
-        <li>{{ u }}</li>
-        {% endfor %}
-    </ul>
-    {% endif %}
-
-    <!-- Pricing -->
-    {% if pricing %}
-    <h4>EC2 Pricing (Sample)</h4>
-    <pre>{{ pricing }}</pre>
-    {% endif %}
-
-    <!-- Message -->
-    {% if message %}
-    <div class="alert alert-success mt-3">{{ message }}</div>
-    {% endif %}
+        <canvas id="chart" height="100"></canvas>
+    </div>
 
 </div>
+
+<script>
+async function loadEC2() {
+    let region = document.getElementById("region").value;
+    let res = await fetch(`/api/ec2?region=${region}`);
+    let data = await res.json();
+
+    let html = "<h4>EC2 Instances</h4><table class='table table-dark'>";
+    html += "<tr><th>ID</th><th>State</th><th>Type</th></tr>";
+
+    let runningCount = 0;
+
+    data.forEach(i => {
+        html += `<tr>
+            <td>${i.id}</td>
+            <td>${i.state}</td>
+            <td>${i.type}</td>
+        </tr>`;
+        if (i.state === "running") runningCount++;
+    });
+
+    html += "</table>";
+    document.getElementById("output").innerHTML = html;
+
+    renderChart(runningCount, data.length - runningCount);
+}
+
+async function loadIAM() {
+    let res = await fetch("/api/iam");
+    let data = await res.json();
+
+    let html = "<h4>IAM Users</h4><ul>";
+    data.forEach(u => {
+        html += `<li>${u}</li>`;
+    });
+    html += "</ul>";
+
+    document.getElementById("output").innerHTML = html;
+}
+
+function renderChart(running, stopped) {
+    const ctx = document.getElementById('chart');
+
+    new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Running', 'Stopped'],
+            datasets: [{
+                data: [running, stopped]
+            }]
+        }
+    });
+}
+</script>
 
 </body>
 </html>
