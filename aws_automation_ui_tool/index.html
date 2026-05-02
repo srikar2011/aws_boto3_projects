@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>AWS Automation Tool</title>
+    <style>
+        body { font-family: Arial; margin: 40px; background: #f4f4f4; }
+        button { margin: 5px; padding: 10px; }
+        input { padding: 8px; }
+        .output { margin-top: 20px; background: #222; color: #0f0; padding: 15px; }
+    </style>
+</head>
+<body>
+
+<h2>AWS Automation Tool (Flask + Boto3)</h2>
+
+<form method="POST">
+    <label>Region:</label>
+    <input type="text" name="region" value="us-east-1">
+    <br><br>
+
+    <button formaction="/ec2">List EC2 Instances</button>
+    <button formaction="/create-bucket">Create S3 Bucket</button>
+    <button formaction="/upload">Upload Sample File</button>
+    <button formaction="/iam">List IAM Users</button>
+</form>
+
+<div class="output">
+    {% if result %}
+        {% for line in result %}
+            <p>{{ line }}</p>
+        {% endfor %}
+    {% else %}
+        <p>No output yet...</p>
+    {% endif %}
+</div>
+
+</body>
+</html>
