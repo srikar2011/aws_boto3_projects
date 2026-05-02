@@ -1,37 +1,75 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>AWS Automation Tool</title>
-    <style>
-        body { font-family: Arial; margin: 40px; background: #f4f4f4; }
-        button { margin: 5px; padding: 10px; }
-        input { padding: 8px; }
-        .output { margin-top: 20px; background: #222; color: #0f0; padding: 15px; }
-    </style>
+    <title>AWS DevOps Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
-<body>
 
-<h2>AWS Automation Tool (Flask + Boto3)</h2>
+<body class="bg-dark text-light">
 
-<form method="POST">
-    <label>Region:</label>
-    <input type="text" name="region" value="us-east-1">
-    <br><br>
+<div class="container mt-4">
+    <h2 class="text-center">🚀 AWS DevOps Dashboard</h2>
 
-    <button formaction="/ec2">List EC2 Instances</button>
-    <button formaction="/create-bucket">Create S3 Bucket</button>
-    <button formaction="/upload">Upload Sample File</button>
-    <button formaction="/iam">List IAM Users</button>
-</form>
+    <form method="POST">
+        <input class="form-control mb-3" name="region" value="us-east-1">
 
-<div class="output">
-    {% if result %}
-        {% for line in result %}
-            <p>{{ line }}</p>
+        <div class="d-flex flex-wrap gap-2">
+            <button formaction="/ec2" class="btn btn-primary">EC2</button>
+            <button formaction="/s3" class="btn btn-success">S3 List</button>
+            <button formaction="/create-bucket" class="btn btn-warning">Create Bucket</button>
+            <button formaction="/iam" class="btn btn-info">IAM Users</button>
+            <button formaction="/pricing" class="btn btn-danger">Pricing</button>
+        </div>
+    </form>
+
+    <hr>
+
+    <!-- EC2 -->
+    {% if ec2 %}
+    <h4>EC2 Instances</h4>
+    <table class="table table-dark table-striped">
+        <tr><th>ID</th><th>State</th><th>Type</th></tr>
+        {% for i in ec2 %}
+        <tr>
+            <td>{{ i.id }}</td>
+            <td>{{ i.state }}</td>
+            <td>{{ i.type }}</td>
+        </tr>
         {% endfor %}
-    {% else %}
-        <p>No output yet...</p>
+    </table>
     {% endif %}
+
+    <!-- S3 -->
+    {% if buckets %}
+    <h4>S3 Buckets</h4>
+    <ul>
+        {% for b in buckets %}
+        <li>{{ b }}</li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+
+    <!-- IAM -->
+    {% if users %}
+    <h4>IAM Users</h4>
+    <ul>
+        {% for u in users %}
+        <li>{{ u }}</li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+
+    <!-- Pricing -->
+    {% if pricing %}
+    <h4>EC2 Pricing (Sample)</h4>
+    <pre>{{ pricing }}</pre>
+    {% endif %}
+
+    <!-- Message -->
+    {% if message %}
+    <div class="alert alert-success mt-3">{{ message }}</div>
+    {% endif %}
+
 </div>
 
 </body>
